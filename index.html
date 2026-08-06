@@ -6,23 +6,19 @@
 <title>EcoCash Loan Calculator</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body{
-margin:0;
-padding:0;
-width:100%;
-min-width:100%;
-overflow-x:hidden;
-font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-background:#e9e9ec;
-}
-  .phone{
-width:100%;
-max-width:430px;
-margin:0 auto;
-background:#e9e9ec;
-min-height:100vh;
-overflow:hidden;
-}
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #e9e9ec;
+    display: flex;
+    justify-content: center;
+    padding: 0;
+  }
+  .phone {
+    width: 100%;
+    max-width: 720px;
+    background: #e9e9ec;
+    min-height: 100vh;
+  }
   header {
     background: #f7f7f8;
     display: flex;
@@ -511,16 +507,6 @@ overflow:hidden;
   .toast.show{transform:translateY(0)}
 }
 
-
-html,*{box-sizing:border-box}
-html,body{overflow-x:hidden}
-img,svg,canvas,video{max-width:100%}
-@media(max-width:430px){
-.card,.app-card,.success-card{width:calc(100% - 16px)!important;margin:8px auto!important;padding:16px!important}
-.phone{max-width:100%!important}
-.phone-row{flex-direction:column}
-.phone-code{width:100%}
-}
 </style>
 </head>
 <body>
@@ -868,8 +854,13 @@ img,svg,canvas,video{max-width:100%}
   }
 
   nextStepBtn2.addEventListener('click', () => {
-    populateSummary();
-    showScreen(financialScreen);
+    const em=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if(!firstName.value.trim()){alert('Enter first name');firstName.focus();return;}
+if(!lastName.value.trim()){alert('Enter last name');lastName.focus();return;}
+if(!email.value.trim()||!em.test(email.value.trim())){alert('Enter valid email');email.focus();return;}
+if(!phone.value.trim()){alert('Enter phone number');phone.focus();return;}
+populateSummary();
+showScreen(financialScreen);
   });
 
   backBtn3.addEventListener('click', () => showScreen(personalScreen));
@@ -910,5 +901,28 @@ countdownTimer = setInterval(() => {
     // setTimeout(() => { window.location.href = 'deno.html'; }, 300);
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ document.querySelectorAll('button').forEach(btn=>{
+   if(/next/i.test(btn.textContent)){
+     btn.addEventListener('click',function(e){
+       const screen=this.closest('.screen')||document;
+       const req=[...screen.querySelectorAll('input[required],select[required],textarea[required]')];
+       for(const el of req){
+         if(!el.value.trim()){
+           e.stopImmediatePropagation();
+           e.preventDefault();
+           alert('Please fill in all required fields.');
+           el.focus();
+           return false;
+         }
+       }
+     },true);
+   }
+ });
+});
+</script>
+
 </body>
 </html>
